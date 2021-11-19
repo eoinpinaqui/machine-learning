@@ -31,8 +31,8 @@ def get_challenger_players():
         challengers = watcher.league.challenger_by_queue(url_region, 'RANKED_SOLO_5x5')
 
         # Open a new csv file to write the data to
-        csv_file = open('./dataset/challenger_players/challenger_players.' + url_region + '.csv', 'w', encoding='utf-8',
-                        newline='')
+        csv_file = open('./dataset/challenger_players/challenger_players.' + url_region + '.csv', 'w',
+                        encoding='utf-8', newline='')
         csv_writer = csv.writer(csv_file)
 
         # Write the data to the open csv
