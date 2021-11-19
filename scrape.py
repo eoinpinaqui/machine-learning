@@ -12,9 +12,6 @@ import constants
 watcher = LolWatcher(constants.API_KEY)
 
 
-# Get a list of all the challenger players in a given region
-# challengers = watcher.league.challenger_by_queue(constants.DEFAULT_URL_REGION, 'RANKED_SOLO_5x5')
-
 # Function to create the directory structure to hold the data set
 def create_dataset_structure():
     for directory in constants.DATASET_DIRECTORIES:
