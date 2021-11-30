@@ -3,7 +3,7 @@
 
 # Base API information
 BASE_URL = 'api.riotgames.com'
-API_KEY = 'RGAPI-4177431d-41b0-4f13-a79b-359cbda2d9aa'
+API_KEY = 'RGAPI-ecbfc4f5-d5c1-443b-ba1b-fd272d2aee81'
 
 # Dataset directory structure
 DATASET_DIRECTORIES = [

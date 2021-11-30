@@ -45,8 +45,8 @@ def get_challenger_players(region):
 # considers most recent n games of the challenger players in a region
 def get_challenger_games(region, n):
     # Get all of the challenger players for the given region
-    create_dataset_structure()
-    get_challenger_players(region)
+    # create_dataset_structure()
+    # get_challenger_players(region)
     players = pd.read_csv('./dataset/challenger_players/challenger_players.' + region + '.csv').values.tolist()
 
     # Loop through each player and get their most recent n games
@@ -56,13 +56,14 @@ def get_challenger_games(region, n):
         try:
             p = watcher.summoner.by_name(region, player[1])
             games = watcher.match.matchlist_by_puuid(constants.REGIONS[region], p['puuid'], count=n)
-            for game in games:
+            for j in tqdm(range(len(games))):
+                game = games[j]
                 region_games[game] = get_game_info(constants.REGIONS[region], game)
         except:
-            print("Couldn't find " + player[1])
+            player = ''
 
     # Open a new csv file to write the data to
-    csv_file = open('./dataset/challenger_games/challenger_games.' + region + '.csv', 'w',
+    csv_file = open('./dataset/challenger_games/challenger_games_big.' + region + '.csv', 'w',
                     encoding='utf-8', newline='')
     csv_writer = csv.writer(csv_file)
 
@@ -103,4 +104,4 @@ def get_game_info(region, game_id):
     return result
 
 
-get_challenger_games('euw1', 10)
+get_challenger_games('euw1', 100)
