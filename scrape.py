@@ -5,6 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 import csv
 import os
+import json
 
 from riotwatcher import LolWatcher
 
@@ -104,4 +105,12 @@ def get_game_info(region, game_id):
     return result
 
 
-get_challenger_games('euw1', 100)
+# Gets the timeline for a game
+p = watcher.summoner.by_name('euw1', 'pinaquack')
+games = watcher.match.matchlist_by_puuid('europe', p['puuid'])
+game = watcher.match.timeline_by_match('europe', games[0])
+
+j = json.dumps(game, indent=4)
+f = open('timeline.json', 'w')
+f.write(j)
+f.close()
