@@ -3,7 +3,7 @@
 
 # Base API information
 BASE_URL = 'api.riotgames.com'
-API_KEY = 'RGAPI-d872e2c9-dabc-4e37-ac41-9549996d9af5'
+API_KEY = 'RGAPI-755789bd-fc3f-491b-a0d5-109730b7ab02'
 
 # Dataset directory structure
 DATASET_DIRECTORIES = [
@@ -53,8 +53,8 @@ GAME_HEADERS_TIMELINE = [
     "red dragons",
     "blue towers",
     "red towers",
-    "red herald",
     "blue herald",
+    "red herald",
     "blue inhibs",
     "red inhibs",
 
@@ -118,7 +118,8 @@ GAME_HEADERS_TIMELINE = [
     "Deaths.10",
     "Assists.10",
 
-    "winner"
+    "Game Length",
+    "Winner"
 ]
 # Challenger games dataset headers
 GAME_HEADERS = [

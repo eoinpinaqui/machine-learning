@@ -53,72 +53,42 @@ def get_challenger_games(region, n):
     games_5 = {}
     games_10 = {}
     games_15 = {}
+    games_full = {}
 
-    for i in tqdm(range(len(players))):
+    for i in range(6):
         player = players[i]
-        try:
-            p = watcher.summoner.by_name(region, player[1])
-            games = watcher.match.matchlist_by_puuid(constants.REGIONS[region], p['puuid'], count=n)
-            for game in games:
-                games_5[game] = get_game_info(constants.REGIONS[region], game, 6)
-                games_10[game] = get_game_info(constants.REGIONS[region], game, 11)
-                games_15[game] = get_game_info(constants.REGIONS[region], game, 16)
-        except:
-            print("Couldn't find " + player[1])
+        #try:
+        p = watcher.summoner.by_name(region, player[1])
+        games = watcher.match.matchlist_by_puuid(constants.REGIONS[region], p['puuid'], count=n)
+        for game in games:
+            data = watcher.match.timeline_by_match(constants.REGIONS[region], game)
+            games_5[game] = get_game_info(data, 6)
+            games_10[game] = get_game_info(data, 11)
+            games_15[game] = get_game_info(data, 16)
+            games_full[game] = get_game_info(data, 120)
+        #except:
+            #print("Couldn't find " + player[1])
 
     # Open a new csv file to write the data to
+    for x in ["5", "10", "15", "full"]:
+        csv_file = open('./dataset/challenger_games_timeline/challenger_games_timeline_' + x + '.' + region + '.csv', 'w',
+                        encoding='utf-8', newline='')
+        csv_writer = csv.writer(csv_file)
+        meta_file = open('./dataset/challenger_games_timeline/challenger_games_timeline_metadata_' + x + '.' + region + '.csv', 'w',
+                         encoding='utf-8', newline='')
+        meta_writer = csv.writer(meta_file)
 
-    csv_file = open('./dataset/challenger_games_timeline/challenger_games_timeline_5.' + region + '.csv', 'w',
-                    encoding='utf-8', newline='')
-    csv_writer = csv.writer(csv_file)
-    meta_file = open('./dataset/challenger_games_timeline/challenger_games_timeline_metadata_5.' + region + '.csv', 'w',
-                     encoding='utf-8', newline='')
-    meta_writer = csv.writer(meta_file)
+        meta_writer.writerow(constants.META_HEADERS)
+        csv_writer.writerow(constants.GAME_HEADERS_TIMELINE)
+        for game in games_5:
+            meta_writer.writerow(games_5[game][0])
+            csv_writer.writerow(games_5[game][1])
 
-    meta_writer.writerow(constants.META_HEADERS)
-    csv_writer.writerow(constants.GAME_HEADERS_TIMELINE)
-    for game in games_5:
-        meta_writer.writerow(games_5[game][0])
-        csv_writer.writerow(games_5[game][1])
-
-    csv_file.close()
-    meta_file.close()
-
-    csv_file = open('./dataset/challenger_games_timeline/challenger_games_timeline_10.' + region + '.csv', 'w',
-                    encoding='utf-8', newline='')
-    csv_writer = csv.writer(csv_file)
-    meta_file = open('./dataset/challenger_games_timeline/challenger_games_timeline_metadata_10.' + region + '.csv',
-                     'w', encoding='utf-8', newline='')
-    meta_writer = csv.writer(meta_file)
-
-    meta_writer.writerow(constants.META_HEADERS)
-    csv_writer.writerow(constants.GAME_HEADERS_TIMELINE)
-    for game in games_10:
-        meta_writer.writerow(games_10[game][0])
-        csv_writer.writerow(games_10[game][1])
-
-    csv_file.close()
-    meta_file.close()
-
-    csv_file = open('./dataset/challenger_games_timeline/challenger_games_timeline_15.' + region + '.csv', 'w',
-                    encoding='utf-8', newline='')
-    csv_writer = csv.writer(csv_file)
-    meta_file = open('./dataset/challenger_games_timeline/challenger_games_timeline_metadata_15.' + region + '.csv',
-                     'w', encoding='utf-8', newline='')
-    meta_writer = csv.writer(meta_file)
-
-    meta_writer.writerow(constants.META_HEADERS)
-    csv_writer.writerow(constants.GAME_HEADERS_TIMELINE)
-    for game in games_15:
-        meta_writer.writerow(games_15[game][0])
-        csv_writer.writerow(games_15[game][1])
-
-    csv_file.close()
-    meta_file.close()
+        csv_file.close()
+        meta_file.close()
 
 
-def get_game_info(region, game_id, max_frames):
-    data = watcher.match.timeline_by_match(region, game_id)
+def get_game_info(data, max_frames):
 
     meta = []
     metaData = data["metadata"]
@@ -126,14 +96,14 @@ def get_game_info(region, game_id, max_frames):
     meta.append(metaData["matchId"])
     meta.append(metaData["participants"])
 
-    data = data["info"]["frames"]
+    frames = data["info"]["frames"]
     gameData = []
     totalCs, totalXP, kills, assists, deaths = (([0] * 10) for i in range(5))
     first_blood, first_tower, winning_team, bDragon, rDragon, bRift, rRift, bTowers, rTowers, bInhib, rInhib = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
-    for i, frames in enumerate(data):
+    for i, frame in enumerate(frames):
         if i < max_frames:
-            events = frames["events"]
+            events = frame["events"]
             for event in events:
                 if event["type"] == "CHAMPION_SPECIAL_KILL":
                     if event["killType"] == "KILL_FIRST_BLOOD":
@@ -177,15 +147,15 @@ def get_game_info(region, game_id, max_frames):
                             bInhib += 1
 
             if i == max_frames - 1 or i == len(data) - 1:
-                for x in frames["participantFrames"]:
-                    totalCs[int(x) - 1] = frames["participantFrames"][x]["jungleMinionsKilled"] + \
-                                          frames["participantFrames"][x]["minionsKilled"]
-                    totalXP[int(x) - 1] = frames["participantFrames"][x]["xp"]
+                for x in frame["participantFrames"]:
+                    totalCs[int(x) - 1] = frame["participantFrames"][x]["jungleMinionsKilled"] + frame["participantFrames"][x]["minionsKilled"]
+                    totalXP[int(x) - 1] = frame["participantFrames"][x]["level"]
 
-    endGame = data[-1]["events"]
+    endGame = frames[-1]["events"]
     for event in endGame:
         if event["type"] == "GAME_END":
             winning_team = event["winningTeam"]
+            game_length = event["timestamp"]
 
     gameData.append(first_blood)
     gameData.append(first_tower)
@@ -205,8 +175,9 @@ def get_game_info(region, game_id, max_frames):
         gameData.append(deaths[i])
         gameData.append(assists[i])
 
+    gameData.append(game_length)
     gameData.append(winning_team)
     return [meta, gameData]
 
 
-get_challenger_games('na1', 1)
+get_challenger_games('na1', 10)
