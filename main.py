@@ -14,15 +14,11 @@ Utility Functions
 
 
 # Returns a list of the dataset features
-# Parameters:
-#    data: Each row in the dataset.
 def get_features(data, n, start=0):
     return np.array([x[start:n] for x in data if len(x) == len(data[0]) and x[len(x) - 1] != 0])
 
 
 # Returns a list of the dataset targets
-# Parameters:
-#   data: Each row in the dataset. Function assumes that the final element in a row is the target.
 def get_targets(data):
     return np.array([x[len(x) - 1] for x in data if len(x) == len(data[0]) and x[len(x) - 1] != 0])
 
