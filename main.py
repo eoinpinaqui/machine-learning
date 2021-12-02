@@ -180,16 +180,16 @@ def main():
     error = False
     model = ''
 
-    # if len(sys.argv) < 2:
-    #     print('You did not specify a model type.')
-    #     error = True
-    # else:
-    #     model = str(sys.argv[1])
+    if len(sys.argv) < 2:
+        print('You did not specify a model type.')
+        error = True
+    else:
+        model = str(sys.argv[1])
 
-    games = pd.read_csv('dataset/challenger_games_timeline/challenger_games_timeline_4.na1.csv').values.tolist()
+    games = pd.read_csv('dataset/challenger_games/challenger_games_big.euw1.csv').values.tolist()
     X = get_features(games, len(games[0]) - 1)
     Y = get_targets(games)
-    model = 'logistic-regression'
+
     if model == 'logistic-regression':
         cross_validate_logistic_regression(X, Y)
         confusion_matrix_random(X, Y)
