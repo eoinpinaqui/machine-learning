@@ -255,8 +255,6 @@ def main():
         linear_svc(X, Y)
     elif model == 'knn':
         cross_validate_knn(X, Y)
-        confusion_matrix_random(X, Y)
-        confusion_matrix_most_frequent(X, Y)
         knn(X, Y)
     elif not error:
         print('Specified model is not supported.')
