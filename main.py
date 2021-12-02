@@ -18,7 +18,8 @@ Utility Functions
 
 # Returns a list of the dataset features
 def get_features(data, n, start=0):
-    return np.array([x[start:n] for x in data if len(x) == len(data[0]) and x[len(x) - 1] != 0])
+    features = np.array([x[start:n] for x in data if len(x) == len(data[0]) and x[len(x) - 1] != 0])
+    return features / features.max(axis=0)
 
 
 # Returns a list of the dataset targets
@@ -31,24 +32,24 @@ Cross Validating Functions
 '''
 
 
-def cross_validate_baseline_random_score(features, targets):
-    scores = cross_val_score(DummyClassifier(strategy='uniform'), features, targets, cv=5, scoring='accuracy')
+def cross_validate_baseline_random_score(features, targets, scoring='accuracy'):
+    scores = cross_val_score(DummyClassifier(strategy='uniform'), features, targets, cv=5, scoring=scoring)
     return {'mean': scores.mean(), 'std': scores.std()}
 
 
-def cross_validate_baseline_most_frequent_score(features, targets):
-    scores = cross_val_score(DummyClassifier(strategy='most_frequent'), features, targets, cv=5, scoring='accuracy')
+def cross_validate_baseline_most_frequent_score(features, targets, scoring='accuracy'):
+    scores = cross_val_score(DummyClassifier(strategy='most_frequent'), features, targets, cv=5, scoring=scoring)
     return {'mean': scores.mean(), 'std': scores.std()}
 
 
-def cross_validate_logistic_regression(features, targets):
+def cross_validate_logistic_regression(features, targets, max_iter=1000):
     C_range = [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000]
 
     means, stds, models = [], [], []
 
     for C in C_range:
-        scores = cross_val_score(LogisticRegression(C=C, penalty='l2', solver='lbfgs'), features, targets, cv=5,
-                                 scoring='accuracy')
+        scores = cross_val_score(LogisticRegression(C=C, penalty='l2', solver='lbfgs', max_iter=max_iter), features,
+                                 targets, cv=5, scoring='accuracy')
         means.append(scores.mean())
         stds.append(scores.std())
 
@@ -70,13 +71,14 @@ def cross_validate_logistic_regression(features, targets):
     print(means)
 
 
-def cross_validate_linear_svc(features, targets):
+def cross_validate_linear_svc(features, targets, max_iter=1000):  # fails to converge with C >= 10
     C_range = [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000]
 
     means, stds, models = [], [], []
 
     for C in C_range:
-        scores = cross_val_score(LinearSVC(C=C), features, targets, cv=5, scoring='accuracy')
+        print(C)
+        scores = cross_val_score(LinearSVC(C=C, max_iter=max_iter), features, targets, cv=5, scoring='accuracy')
         means.append(scores.mean())
         stds.append(scores.std())
 
@@ -94,7 +96,7 @@ def cross_validate_linear_svc(features, targets):
     plt.legend(['Baseline (random)', 'Baseline (most frequent)', 'Trained model'])
     plt.show()
 
-    print('Mean Accuracy Scores for Linear SVC')
+    print('Mean Accuracy Scores for Linear SVC:')
     print(means)
 
 
@@ -121,9 +123,9 @@ def confusion_matrix_most_frequent(features, targets):
     return confusion_matrix(Y_test, Y_pred)
 
 
-def logistic_regression(features, targets):
+def logistic_regression(features, targets, max_iter=1000):
     X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
-    model = LogisticRegression(C=1, penalty='l2', solver='lbfgs').fit(X_train, Y_train)
+    model = LogisticRegression(C=1, penalty='l2', solver='lbfgs', max_iter=max_iter).fit(X_train, Y_train)
     Y_pred = model.predict(X_test)
     print('Confusion Matrix for Logistic Regression Model')
     print(confusion_matrix(Y_test, Y_pred))
@@ -146,11 +148,11 @@ def logistic_regression(features, targets):
     plt.show()
 
 
-def linear_svc(features, targets):
+def linear_svc(features, targets, max_iter=1000):
     X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
-    model = LinearSVC(C=0.1).fit(X_train, Y_train)
+    model = LinearSVC(C=0.1, max_iter=max_iter).fit(X_train, Y_train)
     Y_pred = model.predict(X_test)
-    print('Confusion Matrix for Lienar SVC model')
+    print('Confusion Matrix for Linear SVC model')
     print(confusion_matrix(Y_test, Y_pred))
 
     cm_rand = confusion_matrix_random(features, targets)
@@ -192,13 +194,9 @@ def main():
 
     if model == 'logistic-regression':
         cross_validate_logistic_regression(X, Y)
-        confusion_matrix_random(X, Y)
-        confusion_matrix_most_frequent(X, Y)
         logistic_regression(X, Y)
     elif model == 'linear-svc':
         cross_validate_linear_svc(X, Y)
-        confusion_matrix_random(X, Y)
-        confusion_matrix_most_frequent(X, Y)
         linear_svc(X, Y)
     elif not error:
         print('Specified model is not supported.')
