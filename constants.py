@@ -3,7 +3,7 @@
 
 # Base API information
 BASE_URL = 'api.riotgames.com'
-API_KEY = 'RGAPI-755789bd-fc3f-491b-a0d5-109730b7ab02'
+API_KEY = 'RGAPI-908acd8c-cdfe-4fb3-adca-3358fb8ac0db'
 
 # Dataset directory structure
 DATASET_DIRECTORIES = [
@@ -44,7 +44,8 @@ REGIONS = {
 META_HEADERS = [
     "dataVersion",
     "matchId",
-    "participants"
+    "participants",
+    "Game Length"
 ]
 GAME_HEADERS_TIMELINE = [
     "First Blood",
@@ -118,7 +119,6 @@ GAME_HEADERS_TIMELINE = [
     "Deaths.10",
     "Assists.10",
 
-    "Game Length",
     "Winner"
 ]
 # Challenger games dataset headers
