@@ -3,6 +3,7 @@
 
 # Base API information
 BASE_URL = 'api.riotgames.com'
+
 API_KEY = 'RGAPI-2ff10083-b4c5-4695-ac95-a73104510df7'
 
 # Dataset directory structure
@@ -41,7 +42,86 @@ REGIONS = {
     'tr1': 'europe',
     'ru': 'europe'
 }
+META_HEADERS = [
+    "dataVersion",
+    "matchId",
+    "participants",
+    "Game Length"
+]
+GAME_HEADERS_TIMELINE = [
+    "First Blood",
+    "First Tower",
+    "blue dragons",
+    "red dragons",
+    "blue towers",
+    "red towers",
+    "blue herald",
+    "red herald",
+    "blue inhibs",
+    "red inhibs",
 
+    "CS.1",
+    "LVL.1",
+    "Kills.1",
+    "Deaths.1",
+    "Assists.1",
+
+    "CS.2",
+    "LVL.2",
+    "Kills.2",
+    "Deaths.2",
+    "Assists.2",
+
+    "CS.3",
+    "LVL.3",
+    "Kills.3",
+    "Deaths.3",
+    "Assists.3",
+
+    "CS.4",
+    "LVL.4",
+    "Kills.4",
+    "Deaths.4",
+    "Assists.4",
+
+    "CS.5",
+    "LVL.5",
+    "Kills.5",
+    "Deaths.5",
+    "Assists.5",
+
+    "CS.6",
+    "LVL.6",
+    "Kills.6",
+    "Deaths.6",
+    "Assists.6",
+
+    "CS.7",
+    "LVL.7",
+    "Kills.7",
+    "Deaths.7",
+    "Assists.7",
+
+    "CS.8",
+    "LVL.8",
+    "Kills.8",
+    "Deaths.8",
+    "Assists.8",
+
+    "CS.9",
+    "LVL.9",
+    "Kills.9",
+    "Deaths.9",
+    "Assists.9",
+
+    "CS.10",
+    "LVL.10",
+    "Kills.10",
+    "Deaths.10",
+    "Assists.10",
+
+    "Winner"
+]
 # Challenger games dataset headers
 GAME_HEADERS = [
     # Blue team top
