@@ -10,6 +10,7 @@ from sklearn.metrics import confusion_matrix, roc_curve
 from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
+from sklearn.neighbors import KNeighborsClassifier
 
 '''
 Utility Functions
@@ -97,6 +98,34 @@ def cross_validate_linear_svc(features, targets):
     print('Mean Accuracy Scores for Linear SVC')
     print(means)
 
+def cross_validate_knn(features, targets):
+    k_range = [1, 2, 4, 8, 16, 32, 64, 128]
+
+    means, stds = [], []
+
+    for k in k_range:
+        scores = cross_val_score(KNeighborsClassifier(n_neighbors=k), features, targets, cv=5,
+                                    scoring='accuracy')
+        means.append(scores.mean())
+        stds.append(scores.std())
+
+    br = cross_validate_baseline_random_score(features, targets)
+    bf = cross_validate_baseline_most_frequent_score(features, targets)
+
+    plt.figure(figsize=(10, 10))
+    plt.errorbar(k_range, [br['mean']] * len(k_range), yerr=[br['std']] * len(k_range), fmt='y')
+    plt.errorbar(k_range, [bf['mean']] * len(k_range), yerr=[bf['std']] * len(k_range), fmt='r')
+    plt.errorbar(k_range, means, yerr=stds, fmt='b')
+    plt.ylabel('Mean Accuracy Score')
+    plt.xlabel('k')
+    plt.xscale('log')
+    plt.title('Comparing accuracy of baseline models with k Nearest Neighbor model')
+    plt.legend(['Baseline (random)', 'Baseline (most frequent)', 'Trained model'])
+    plt.show()
+
+    print('Mean Accuracy Scores for k Nearest Neighbor')
+    print(means)
+
 
 '''
 Model Training Functions
@@ -170,6 +199,32 @@ def linear_svc(features, targets):
     plt.legend(['Trained model', 'Baseline (random)', 'Baseline (most frequent)'])
     plt.show()
 
+def knn(features, targets):
+    X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
+    model = KNeighborsClassifier(n_neighbors=64).fit(X_train, Y_train)
+    Y_pred = model.predict(X_test)
+    print('Confusion Matrix for k Nearest Neighbour model')
+    print(confusion_matrix(Y_test, Y_pred))
+
+    cm_rand = confusion_matrix_random(features, targets)
+    cm_freq = confusion_matrix_most_frequent(features, targets)
+
+    y_scores = model.predict_proba(X_test)
+    fpr, tpr, _ = roc_curve(Y_test, y_scores[:, 1])
+    
+    plt.plot(fpr, tpr)
+    rand_tpr = cm_rand[1][1] / (cm_rand[1][1] + cm_rand[1][0])
+    rand_fpr = cm_rand[0][1] / (cm_rand[0][1] + cm_rand[0][0])
+    freq_tpr = cm_freq[1][1] / (cm_freq[1][1] + cm_freq[1][0])
+    freq_fpr = cm_freq[0][1] / (cm_freq[0][1] + cm_freq[0][0])
+    plt.plot(rand_tpr, rand_fpr, 'rs')
+    plt.plot(freq_tpr, freq_fpr, 'gs')
+    plt.title('ROC Curve for k Nearest Neighbour Model')
+    plt.xlabel('False positive rate')
+    plt.ylabel('True positive rate')
+    plt.legend(['Trained model', 'Baseline (random)', 'Baseline (most frequent)'])
+    plt.show()
+
 
 '''
 Main
@@ -200,6 +255,11 @@ def main():
         confusion_matrix_random(X, Y)
         confusion_matrix_most_frequent(X, Y)
         linear_svc(X, Y)
+    elif model == 'knn':
+        cross_validate_knn(X, Y)
+        confusion_matrix_random(X, Y)
+        confusion_matrix_most_frequent(X, Y)
+        knn(X, Y)
     elif not error:
         print('Specified model is not supported.')
         error = True
@@ -208,6 +268,7 @@ def main():
         print('The current model types are currently supported:')
         print('    - Logistic Regression (python main.py logistic-regression)')
         print('    - Linear SVC          (python main.py linear-svc)')
+        print('    - K Nearest Neighbour (python main.py knn)')
 
 
 if __name__ == "__main__":
