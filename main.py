@@ -19,8 +19,7 @@ Utility Functions
 
 # Returns a list of the dataset features
 def get_features(data, n, start=0):
-    features = np.array([x[start:n] for x in data if len(x) == len(data[0]) and x[len(x) - 1] != 0])
-    return features / features.max(axis=0)
+    return np.array([x[start:n] for x in data if len(x) == len(data[0]) and x[len(x) - 1] != 0])
 
 
 # Returns a list of the dataset targets
@@ -78,7 +77,6 @@ def cross_validate_linear_svc(features, targets, max_iter=1000):  # fails to con
     means, stds, models = [], [], []
 
     for C in C_range:
-        print(C)
         scores = cross_val_score(LinearSVC(C=C, max_iter=max_iter), features, targets, cv=5, scoring='accuracy')
         means.append(scores.mean())
         stds.append(scores.std())
@@ -100,14 +98,15 @@ def cross_validate_linear_svc(features, targets, max_iter=1000):  # fails to con
     print('Mean Accuracy Scores for Linear SVC:')
     print(means)
 
+
 def cross_validate_knn(features, targets):
-    k_range = [1, 2, 4, 8, 16, 32, 64, 128]
+    k_range = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
 
     means, stds = [], []
 
     for k in k_range:
         scores = cross_val_score(KNeighborsClassifier(n_neighbors=k), features, targets, cv=5,
-                                    scoring='accuracy')
+                                 scoring='accuracy')
         means.append(scores.mean())
         stds.append(scores.std())
 
@@ -120,7 +119,7 @@ def cross_validate_knn(features, targets):
     plt.errorbar(k_range, means, yerr=stds, fmt='b')
     plt.ylabel('Mean Accuracy Score')
     plt.xlabel('k')
-    plt.xscale('log')
+    plt.xscale('log', base=2)
     plt.title('Comparing accuracy of baseline models with k Nearest Neighbor model')
     plt.legend(['Baseline (random)', 'Baseline (most frequent)', 'Trained model'])
     plt.show()
@@ -201,6 +200,7 @@ def linear_svc(features, targets, max_iter=1000):
     plt.legend(['Trained model', 'Baseline (random)', 'Baseline (most frequent)'])
     plt.show()
 
+
 def knn(features, targets):
     X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
     model = KNeighborsClassifier(n_neighbors=64).fit(X_train, Y_train)
@@ -213,7 +213,7 @@ def knn(features, targets):
 
     y_scores = model.predict_proba(X_test)
     fpr, tpr, _ = roc_curve(Y_test, y_scores[:, 1])
-    
+
     plt.plot(fpr, tpr)
     rand_tpr = cm_rand[1][1] / (cm_rand[1][1] + cm_rand[1][0])
     rand_fpr = cm_rand[0][1] / (cm_rand[0][1] + cm_rand[0][0])
@@ -243,7 +243,7 @@ def main():
     else:
         model = str(sys.argv[1])
 
-    games = pd.read_csv('dataset/challenger_games/challenger_games_big.euw1.csv').values.tolist()
+    games = pd.read_csv('dataset/challenger_games_timeline/challenger_games_timeline_1.euw1.csv').values.tolist()
     X = get_features(games, len(games[0]) - 1)
     Y = get_targets(games)
 
