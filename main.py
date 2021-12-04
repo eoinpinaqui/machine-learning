@@ -71,7 +71,7 @@ def cross_validate_logistic_regression(features, targets, mins, max_iter=1000):
     plt.show()
 
 
-def cross_validate_knn(features, targets):
+def cross_validate_knn(features, targets, mins):
     k_range = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
 
     means, stds = [], []
@@ -92,7 +92,8 @@ def cross_validate_knn(features, targets):
     plt.ylabel('Mean Accuracy Score')
     plt.xlabel('k')
     plt.xscale('log', base=2)
-    plt.title('Comparing accuracy of baseline models with k Nearest Neighbor model')
+    plt.title('Comparing accuracy of baseline models with k Nearest Neighbour model (' + str(
+        mins) + ' minutes dataset)')
     plt.legend(['Baseline (random)', 'Baseline (most frequent)', 'Trained model'])
     plt.show()
 
@@ -161,11 +162,18 @@ def logistic_regression(features, targets, theta_labels, mins, max_iter=1000):
     plt.show()
 
 
-def knn(features, targets):
+def knn(features, targets, mins):
     X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
     model = KNeighborsClassifier(n_neighbors=64).fit(X_train, Y_train)
     Y_pred = model.predict(X_test)
     print('Confusion Matrix for k Nearest Neighbour model')
+    print(confusion_matrix(Y_test, Y_pred))
+
+    print('kNN Model - Accuracy Score: ' + str(accuracy_score(Y_test, Y_pred)))
+    print('kNN Model - Precision Score: ' + str(precision_score(Y_test, Y_pred)))
+    print('kNN Model - Recall Score: ' + str(recall_score(Y_test, Y_pred)))
+    print('kNN Model - F1 Score: ' + str(f1_score(Y_test, Y_pred)))
+    print('Confusion Matrix for kNN Model (' + str(mins) + ' minutes dataset)')
     print(confusion_matrix(Y_test, Y_pred))
 
     cm_rand = confusion_matrix_random(features, targets)
@@ -217,8 +225,9 @@ def main():
             cross_validate_logistic_regression(X, Y, mins)
             logistic_regression(X, Y, feature_names, mins)
         elif model == 'knn':
-            cross_validate_knn(X, Y)
-            knn(X, Y)
+            mins = i * 5
+            cross_validate_knn(X, Y, mins)
+            knn(X, Y, mins)
         elif not error:
             print('Specified model is not supported.')
             error = True
