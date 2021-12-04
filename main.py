@@ -5,11 +5,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import cross_val_score, train_test_split
-from sklearn.metrics import confusion_matrix, roc_curve
+from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, confusion_matrix, roc_curve
 
 from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.svm import LinearSVC
 from sklearn.neighbors import KNeighborsClassifier
 
 '''
@@ -42,7 +41,7 @@ def cross_validate_baseline_most_frequent_score(features, targets, scoring='accu
     return {'mean': scores.mean(), 'std': scores.std()}
 
 
-def cross_validate_logistic_regression(features, targets, max_iter=1000):
+def cross_validate_logistic_regression(features, targets, mins, max_iter=1000):
     C_range = [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000]
 
     means, stds, models = [], [], []
@@ -56,34 +55,9 @@ def cross_validate_logistic_regression(features, targets, max_iter=1000):
     br = cross_validate_baseline_random_score(features, targets)
     bf = cross_validate_baseline_most_frequent_score(features, targets)
 
-    plt.figure(figsize=(10, 10))
-    plt.errorbar(C_range, [br['mean']] * len(C_range), yerr=[br['std']] * len(C_range), fmt='y')
-    plt.errorbar(C_range, [bf['mean']] * len(C_range), yerr=[bf['std']] * len(C_range), fmt='r')
-    plt.errorbar(C_range, means, yerr=stds, fmt='b')
-    plt.ylabel('Mean Accuracy Score')
-    plt.xlabel('C')
-    plt.xscale('log')
-    plt.title('Comparing accuracy of baseline models with Logistic Regression model')
-    plt.legend(['Baseline (random)', 'Baseline (most frequent)', 'Trained model'])
-    plt.show()
-
     print('Mean Accuracy Scores for Logistic Regression')
     print(means)
 
-
-def cross_validate_linear_svc(features, targets, max_iter=1000):  # fails to converge with C >= 10
-    C_range = [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000]
-
-    means, stds, models = [], [], []
-
-    for C in C_range:
-        scores = cross_val_score(LinearSVC(C=C, max_iter=max_iter), features, targets, cv=5, scoring='accuracy')
-        means.append(scores.mean())
-        stds.append(scores.std())
-
-    br = cross_validate_baseline_random_score(features, targets)
-    bf = cross_validate_baseline_most_frequent_score(features, targets)
-
     plt.figure(figsize=(10, 10))
     plt.errorbar(C_range, [br['mean']] * len(C_range), yerr=[br['std']] * len(C_range), fmt='y')
     plt.errorbar(C_range, [bf['mean']] * len(C_range), yerr=[bf['std']] * len(C_range), fmt='r')
@@ -91,12 +65,10 @@ def cross_validate_linear_svc(features, targets, max_iter=1000):  # fails to con
     plt.ylabel('Mean Accuracy Score')
     plt.xlabel('C')
     plt.xscale('log')
-    plt.title('Comparing accuracy of baseline models with Linear SVC model')
+    plt.title('Comparing accuracy of baseline models with Logistic Regression model (' + str(
+        mins) + ' minutes dataset)')
     plt.legend(['Baseline (random)', 'Baseline (most frequent)', 'Trained model'])
     plt.show()
-
-    print('Mean Accuracy Scores for Linear SVC:')
-    print(means)
 
 
 def cross_validate_knn(features, targets):
@@ -151,38 +123,26 @@ def confusion_matrix_most_frequent(features, targets):
     return confusion_matrix(Y_test, Y_pred)
 
 
-def logistic_regression(features, targets, max_iter=1000):
+def logistic_regression(features, targets, theta_labels, mins, max_iter=1000):
     X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
     model = LogisticRegression(C=1, penalty='l2', solver='lbfgs', max_iter=max_iter).fit(X_train, Y_train)
     Y_pred = model.predict(X_test)
-    print('Confusion Matrix for Logistic Regression Model')
+
+    print('Logistic Regression Model - Accuracy Score: ' + str(accuracy_score(Y_test, Y_pred)))
+    print('Logistic Regression Model - Precision Score: ' + str(precision_score(Y_test, Y_pred)))
+    print('Logistic Regression Model - Recall Score: ' + str(recall_score(Y_test, Y_pred)))
+    print('Logistic Regression Model - F1 Score: ' + str(f1_score(Y_test, Y_pred)))
+    print('Confusion Matrix for Logistic Regression Model (' + str(mins) + ' minutes dataset)')
     print(confusion_matrix(Y_test, Y_pred))
 
-    cm_rand = confusion_matrix_random(features, targets)
-    cm_freq = confusion_matrix_most_frequent(features, targets)
+    model_params = model.coef_[0]
 
-    fpr, tpr, _ = roc_curve(Y_test, model.decision_function(X_test))
-    plt.plot(fpr, tpr)
-    rand_tpr = cm_rand[1][1] / (cm_rand[1][1] + cm_rand[1][0])
-    rand_fpr = cm_rand[0][1] / (cm_rand[0][1] + cm_rand[0][0])
-    freq_tpr = cm_freq[1][1] / (cm_freq[1][1] + cm_freq[1][0])
-    freq_fpr = cm_freq[0][1] / (cm_freq[0][1] + cm_freq[0][0])
-    plt.plot(rand_tpr, rand_fpr, 'rs')
-    plt.plot(freq_tpr, freq_fpr, 'gs')
-    plt.title('ROC Curve for Logistic Regression Model')
-    plt.xlabel('False positive rate')
-    plt.ylabel('True positive rate')
-    plt.legend(['Trained model', 'Baseline (random)', 'Baseline (most frequent)'])
+    plt.barh(theta_labels, model_params)
+    plt.title('Parameter Weights for Logistic Regression Model (' + str(mins) + ' minutes dataset)')
+    plt.ylabel('Parameters')
+    plt.xlabel('Weight')
     plt.show()
 
-
-def linear_svc(features, targets, max_iter=1000):
-    X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
-    model = LinearSVC(C=0.1, max_iter=max_iter).fit(X_train, Y_train)
-    Y_pred = model.predict(X_test)
-    print('Confusion Matrix for Linear SVC model')
-    print(confusion_matrix(Y_test, Y_pred))
-
     cm_rand = confusion_matrix_random(features, targets)
     cm_freq = confusion_matrix_most_frequent(features, targets)
 
@@ -194,7 +154,7 @@ def linear_svc(features, targets, max_iter=1000):
     freq_fpr = cm_freq[0][1] / (cm_freq[0][1] + cm_freq[0][0])
     plt.plot(rand_tpr, rand_fpr, 'rs')
     plt.plot(freq_tpr, freq_fpr, 'gs')
-    plt.title('ROC Curve for Linear SVC Model')
+    plt.title('ROC Curve for Logistic Regression Model (' + str(mins) + ' minutes dataset)')
     plt.xlabel('False positive rate')
     plt.ylabel('True positive rate')
     plt.legend(['Trained model', 'Baseline (random)', 'Baseline (most frequent)'])
@@ -243,27 +203,29 @@ def main():
     else:
         model = str(sys.argv[1])
 
-    games = pd.read_csv('dataset/challenger_games_timeline/challenger_games_timeline_1.euw1.csv').values.tolist()
-    X = get_features(games, len(games[0]) - 1)
-    Y = get_targets(games)
+    for i in range(1, 5):
+        g = pd.read_csv('dataset/challenger_games_timeline/challenger_games_timeline_' + str(i) + '.euw1.csv')
+        f = list(g.columns)
+        feature_names = f[0:(len(f) - 1)]
+        games = g.values.tolist()
 
-    if model == 'logistic-regression':
-        cross_validate_logistic_regression(X, Y)
-        logistic_regression(X, Y)
-    elif model == 'linear-svc':
-        cross_validate_linear_svc(X, Y)
-        linear_svc(X, Y)
-    elif model == 'knn':
-        cross_validate_knn(X, Y)
-        knn(X, Y)
-    elif not error:
-        print('Specified model is not supported.')
-        error = True
+        X = get_features(games, len(games[0]) - 1)
+        Y = get_targets(games)
+
+        if model == 'logistic-regression':
+            mins = i * 5
+            cross_validate_logistic_regression(X, Y, mins)
+            logistic_regression(X, Y, feature_names, mins)
+        elif model == 'knn':
+            cross_validate_knn(X, Y)
+            knn(X, Y)
+        elif not error:
+            print('Specified model is not supported.')
+            error = True
 
     if error:
         print('The current model types are currently supported:')
         print('    - Logistic Regression (python main.py logistic-regression)')
-        print('    - Linear SVC          (python main.py linear-svc)')
         print('    - K Nearest Neighbour (python main.py knn)')
 
 
