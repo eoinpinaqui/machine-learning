@@ -26,7 +26,7 @@ def get_challenger_players(region):
     challengers = watcher.league.challenger_by_queue(region, 'RANKED_SOLO_5x5')
 
     # Open a new csv file to write the data to
-    csv_file = open('./dataset/challenger_players_timeline/challenger_players_timeline.' + region + '.csv', 'w',
+    csv_file = open('./dataset/challenger_players_timeline_3/challenger_players_timeline.' + region + '.csv', 'w',
                     encoding='utf-8', newline='')
     csv_writer = csv.writer(csv_file)
 
@@ -47,7 +47,7 @@ def get_challenger_games(region, n):
     create_dataset_structure()
     get_challenger_players(region)
     players = pd.read_csv(
-        './dataset/challenger_players_timeline/challenger_players_timeline.' + region + '.csv').values.tolist()
+        './dataset/challenger_players_timeline_3/challenger_players_timeline.' + region + '.csv').values.tolist()
 
     # Loop through each player and get their most recent n games
     games_5 = {}
@@ -72,7 +72,7 @@ def get_challenger_games(region, n):
             print("Couldn't find " + player[1])
 
     # Open a new csv file to write the data to
-    meta_file = open('./dataset/challenger_games_timeline_2/challenger_games_timeline_metadata' + '.' + region + '.csv', 'w',
+    meta_file = open('./dataset/challenger_games_timeline_3/challenger_games_timeline_metadata' + '.' + region + '.csv', 'w',
                      encoding='utf-8', newline='')
     meta_writer = csv.writer(meta_file)
     meta_writer.writerow(constants.META_HEADERS)
@@ -84,7 +84,7 @@ def get_challenger_games(region, n):
     setCount = 1
     for x in [games_5, games_10, games_15, games_20, games_full]:
 
-        csv_file = open('./dataset/challenger_games_timeline_2/challenger_games_timeline_' + str(setCount) + '.' + region + '.csv', 'w',
+        csv_file = open('./dataset/challenger_games_timeline_3/challenger_games_timeline_' + str(setCount) + '.' + region + '.csv', 'w',
                         encoding='utf-8', newline='')
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(constants.GAME_HEADERS_TIMELINE)
@@ -190,5 +190,4 @@ def get_game_info(data, max_frames):
     return [meta, gameData]
 
 
-get_challenger_games('na1', 50)
-get_challenger_games('euw1', 50)
+get_challenger_games('euw1', 100)
