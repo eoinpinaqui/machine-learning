@@ -161,7 +161,7 @@ def logistic_regression(features, targets, theta_labels, mins, max_iter=1000):
     if mins == 10:
         C = 1
     else:
-        C =0.01
+        C = 0.01
 
     X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
     model = LogisticRegression(C=C, penalty='l2', solver='lbfgs', max_iter=max_iter).fit(X_train, Y_train)
