@@ -5,7 +5,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import cross_val_score, train_test_split
-from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, confusion_matrix, roc_curve, roc_auc_score
+from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, roc_auc_score, confusion_matrix, \
+    roc_curve
 
 from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LogisticRegression
@@ -120,32 +121,63 @@ Model Training Functions
 def confusion_matrix_random(features, targets):
     X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
     model = DummyClassifier(strategy='uniform').fit(X_train, Y_train)
-    Y_pred = model.predict(X_test)
+    Y_pred_train = model.predict(X_train)
+    Y_pred_test = model.predict(X_test)
+
+    print('===== BASELINE (RANDOM) =====')
+    print('===== TRAINING DATA =====')
+    print('Baseline Model (random) - Accuracy Score: ' + str(accuracy_score(Y_train, Y_pred_train)))
+    print('Baseline Model (random) - Precision Score: ' + str(precision_score(Y_train, Y_pred_train)))
+    print('Baseline Model (random) - Recall Score: ' + str(recall_score(Y_train, Y_pred_train)))
+    print('Baseline Model (random) - F1 Score: ' + str(f1_score(Y_train, Y_pred_train)))
+
+    print('===== TEST DATA =====')
+    print('Baseline Model (random) - Accuracy Score: ' + str(accuracy_score(Y_test, Y_pred_test)))
+    print('Baseline Model (random) - Precision Score: ' + str(precision_score(Y_test, Y_pred_test)))
+    print('Baseline Model (random) - Recall Score: ' + str(recall_score(Y_test, Y_pred_test)))
+    print('Baseline Model (random) - F1 Score: ' + str(f1_score(Y_test, Y_pred_test)))
+    print('Baseline Model (random) - AUC Score: ' + str(roc_auc_score(Y_test, Y_pred_test)))
+    print('Confusion Matrix for Baseline Classifier (most frequent)')
     print('Confusion Matrix for Baseline Classifier (Random)')
-    print(confusion_matrix(Y_test, Y_pred))
-    return confusion_matrix(Y_test, Y_pred)
+    print(confusion_matrix(Y_test, Y_pred_test))
+    return confusion_matrix(Y_test, Y_pred_test)
 
 
 def confusion_matrix_most_frequent(features, targets):
     X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
     model = DummyClassifier(strategy='most_frequent').fit(X_train, Y_train)
-    Y_pred = model.predict(X_test)
-    print('Confusion Matrix for Baseline Classifier (Most Frequent)')
-    print(confusion_matrix(Y_test, Y_pred))
-    return confusion_matrix(Y_test, Y_pred)
+    Y_pred_train = model.predict(X_train)
+    Y_pred_test = model.predict(X_test)
+    '''
+    print('===== BASELINE (MOST FREQUENT) =====')
+    print('===== TRAINING DATA =====')
+    print('Baseline Model (most frequent) - Accuracy Score: ' + str(accuracy_score(Y_train, Y_pred_train)))
+    print('Baseline Model (most frequent) - Precision Score: ' + str(precision_score(Y_train, Y_pred_train)))
+    print('Baseline Model (most frequent) - Recall Score: ' + str(recall_score(Y_train, Y_pred_train)))
+    print('Baseline Model (most frequent) - F1 Score: ' + str(f1_score(Y_train, Y_pred_train)))
+
+    print('===== TEST DATA =====')
+    print('Baseline Model (most frequent) - Accuracy Score: ' + str(accuracy_score(Y_test, Y_pred_test)))
+    print('Baseline Model (most frequent) - Precision Score: ' + str(precision_score(Y_test, Y_pred_test)))
+    print('Baseline Model (most frequent) - Recall Score: ' + str(recall_score(Y_test, Y_pred_test)))
+    print('Baseline Model (most frequent) - F1 Score: ' + str(f1_score(Y_test, Y_pred_test)))
+    print('Baseline Model (most frequent) - AUC Score: ' + str(roc_auc_score(Y_test, Y_pred_test)))
+    '''
+    print('Confusion Matrix for Baseline Classifier (most frequent)')
+    print(confusion_matrix(Y_test, Y_pred_test))
+    return confusion_matrix(Y_test, Y_pred_test)
 
 
 def logistic_regression(features, targets, theta_labels, mins, max_iter=1000):
-    X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
-    model = LogisticRegression(C=1, penalty='l2', solver='lbfgs', max_iter=max_iter).fit(X_train, Y_train)
-    Y_pred = model.predict(X_test)
+    if mins == 10:
+        C = 1
+    else:
+        C = 0.01
 
-    print('Logistic Regression Model - Accuracy Score: ' + str(accuracy_score(Y_test, Y_pred)))
-    print('Logistic Regression Model - Precision Score: ' + str(precision_score(Y_test, Y_pred)))
-    print('Logistic Regression Model - Recall Score: ' + str(recall_score(Y_test, Y_pred)))
-    print('Logistic Regression Model - F1 Score: ' + str(f1_score(Y_test, Y_pred)))
-    print('Confusion Matrix for Logistic Regression Model (' + str(mins) + ' minutes dataset)')
-    print(confusion_matrix(Y_test, Y_pred))
+    X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
+    model = LogisticRegression(C=C, penalty='l2', solver='lbfgs', max_iter=max_iter).fit(X_train, Y_train)
+    Y_pred_train = model.predict(X_train)
+    Y_pred_test = model.predict(X_test)
 
     model_params = model.coef_[0]
 
@@ -159,6 +191,23 @@ def logistic_regression(features, targets, theta_labels, mins, max_iter=1000):
     cm_freq = confusion_matrix_most_frequent(features, targets)
 
     fpr, tpr, _ = roc_curve(Y_test, model.decision_function(X_test))
+
+    print('===== LOGISTIC REGRESSION =====')
+    print('===== TRAINING DATA =====')
+    print('Logistic Regression Model - Accuracy Score: ' + str(accuracy_score(Y_train, Y_pred_train)))
+    print('Logistic Regression Model - Precision Score: ' + str(precision_score(Y_train, Y_pred_train)))
+    print('Logistic Regression Model - Recall Score: ' + str(recall_score(Y_train, Y_pred_train)))
+    print('Logistic Regression Model - F1 Score: ' + str(f1_score(Y_train, Y_pred_train)))
+
+    print('===== TEST DATA =====')
+    print('Logistic Regression Model - Accuracy Score: ' + str(accuracy_score(Y_test, Y_pred_test)))
+    print('Logistic Regression Model - Precision Score: ' + str(precision_score(Y_test, Y_pred_test)))
+    print('Logistic Regression Model - Recall Score: ' + str(recall_score(Y_test, Y_pred_test)))
+    print('Logistic Regression Model - F1 Score: ' + str(f1_score(Y_test, Y_pred_test)))
+    print('Logistic Regression Model - AUC Score: ' + str(roc_auc_score(Y_test, Y_pred_test)))
+    print('Confusion Matrix for Logistic Regression Model (' + str(mins) + ' minutes dataset)')
+    print(confusion_matrix(Y_test, Y_pred_test))
+
     plt.plot(fpr, tpr)
     rand_tpr = cm_rand[1][1] / (cm_rand[1][1] + cm_rand[1][0])
     rand_fpr = cm_rand[0][1] / (cm_rand[0][1] + cm_rand[0][0])
@@ -177,13 +226,25 @@ def knn(features, targets, mins):
     X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
     model = KNeighborsClassifier(n_neighbors=64).fit(X_train, Y_train)
     Y_pred = model.predict(X_test)
+    Y_pred_t = model.predict(X_train)
     print('Confusion Matrix for k Nearest Neighbour model')
     print(confusion_matrix(Y_test, Y_pred))
 
+
+    print('===== kNN =====')
+    print('===== TRAINING DATA =====')
+    print('kNN Model - Accuracy Score: ' + str(accuracy_score(Y_train, Y_pred_t)))
+    print('kNN Model - Precision Score: ' + str(precision_score(Y_train, Y_pred_t)))
+    print('kNN Model - Recall Score: ' + str(recall_score(Y_train, Y_pred_t)))
+    print('kNN Model - F1 Score: ' + str(f1_score(Y_train, Y_pred_t)))
+    print(confusion_matrix(Y_train, Y_pred_t))
+
+    print('===== TEST DATA =====')
     print('kNN Model - Accuracy Score: ' + str(accuracy_score(Y_test, Y_pred)))
     print('kNN Model - Precision Score: ' + str(precision_score(Y_test, Y_pred)))
     print('kNN Model - Recall Score: ' + str(recall_score(Y_test, Y_pred)))
     print('kNN Model - F1 Score: ' + str(f1_score(Y_test, Y_pred)))
+    print('kNN - AUC Score: ' + str(roc_auc_score(Y_test, Y_pred)))
     print('Confusion Matrix for kNN Model (' + str(mins) + ' minutes dataset)')
     print(confusion_matrix(Y_test, Y_pred))
 
