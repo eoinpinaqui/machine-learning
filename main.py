@@ -215,13 +215,25 @@ def knn(features, targets, mins):
     X_train, X_test, Y_train, Y_test = train_test_split(features, targets, test_size=0.2)
     model = KNeighborsClassifier(n_neighbors=64).fit(X_train, Y_train)
     Y_pred = model.predict(X_test)
+    Y_pred_t = model.predict(X_train)
     print('Confusion Matrix for k Nearest Neighbour model')
     print(confusion_matrix(Y_test, Y_pred))
 
+
+    print('===== kNN =====')
+    print('===== TRAINING DATA =====')
+    print('kNN Model - Accuracy Score: ' + str(accuracy_score(Y_train, Y_pred_t)))
+    print('kNN Model - Precision Score: ' + str(precision_score(Y_train, Y_pred_t)))
+    print('kNN Model - Recall Score: ' + str(recall_score(Y_train, Y_pred_t)))
+    print('kNN Model - F1 Score: ' + str(f1_score(Y_train, Y_pred_t)))
+    print(confusion_matrix(Y_train, Y_pred_t))
+
+    print('===== TEST DATA =====')
     print('kNN Model - Accuracy Score: ' + str(accuracy_score(Y_test, Y_pred)))
     print('kNN Model - Precision Score: ' + str(precision_score(Y_test, Y_pred)))
     print('kNN Model - Recall Score: ' + str(recall_score(Y_test, Y_pred)))
     print('kNN Model - F1 Score: ' + str(f1_score(Y_test, Y_pred)))
+    print('kNN - AUC Score: ' + str(roc_auc_score(Y_test, Y_pred)))
     print('Confusion Matrix for kNN Model (' + str(mins) + ' minutes dataset)')
     print(confusion_matrix(Y_test, Y_pred))
 
