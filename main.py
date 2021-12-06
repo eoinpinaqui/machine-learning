@@ -5,11 +5,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import cross_val_score, train_test_split
-from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, confusion_matrix, roc_curve
+from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, confusion_matrix, roc_curve, roc_auc_score
 
 from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
+from keras.models import Sequential
+from keras.layers import Dense
 
 '''
 Utility Functions
@@ -25,6 +27,15 @@ def get_features(data, n, start=0):
 def get_targets(data):
     return np.array([x[len(x) - 1] for x in data if len(x) == len(data[0]) and x[len(x) - 1] != 0])
 
+
+def conv_net_targets(targets):
+    conv_targets = []
+    for x in targets:
+        if x == 1:
+            conv_targets.append(1)
+        else:
+            conv_targets.append(0)
+    return np.array(conv_targets)
 
 '''
 Cross Validating Functions
@@ -196,6 +207,47 @@ def knn(features, targets, mins):
     plt.show()
 
 
+def conv_net(features, targets, mins):
+    x_train, x_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, stratify=targets, random_state=0)
+    model = Sequential()
+    model.add(Dense(128, activation='relu', input_dim=60))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.summary()
+
+    hist = model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=80, batch_size=256)
+
+    Y_pred_train = model.predict(x_train) > 0.5
+    Y_pred_test = model.predict(x_test) > 0.5
+
+    acc = hist.history['accuracy']
+    val = hist.history['val_accuracy']
+    epochs = range(1, len(acc) + 1)
+
+    print('===== CONV NET=====')
+    print('===== TRAINING DATA =====')
+    print('Logistic Regression Model - Accuracy Score: ' + str(accuracy_score(y_train, Y_pred_train)))
+    print('Logistic Regression Model - Precision Score: ' + str(precision_score(y_train, Y_pred_train)))
+    print('Logistic Regression Model - Recall Score: ' + str(recall_score(y_train, Y_pred_train)))
+    print('Logistic Regression Model - F1 Score: ' + str(f1_score(y_train, Y_pred_train)))
+
+    print('===== TEST DATA =====')
+    print('Logistic Regression Model - Accuracy Score: ' + str(accuracy_score(y_test, Y_pred_test)))
+    print('Logistic Regression Model - Precision Score: ' + str(precision_score(y_test, Y_pred_test)))
+    print('Logistic Regression Model - Recall Score: ' + str(recall_score(y_test, Y_pred_test)))
+    print('Logistic Regression Model - F1 Score: ' + str(f1_score(y_test, Y_pred_test)))
+    print('Logistic Regression Model - AUC Score: ' + str(roc_auc_score(y_test, Y_pred_test)))
+    print('Confusion Matrix for Logistic Regression Model (' + str(mins) + ' minutes dataset)')
+    print(confusion_matrix(y_test, Y_pred_test))
+
+    plt.plot(epochs, acc, '-', label='Training accuracy')
+    plt.plot(epochs, val, ':', label='Validation accuracy')
+    plt.title('Training and Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend(loc='lower right')
+    plt.show()
+
 '''
 Main
 '''
@@ -211,8 +263,9 @@ def main():
     else:
         model = str(sys.argv[1])
 
+    model = "nn"
     for i in range(1, 5):
-        g = pd.read_csv('dataset/challenger_games_timeline/challenger_games_timeline_' + str(i) + '.euw1.csv')
+        g = pd.read_csv('dataset/challenger_games_timeline_3/challenger_games_timeline_' + str(i) + '.euw1.csv')
         f = list(g.columns)
         feature_names = f[0:(len(f) - 1)]
         games = g.values.tolist()
@@ -228,6 +281,10 @@ def main():
             mins = i * 5
             cross_validate_knn(X, Y, mins)
             knn(X, Y, mins)
+        elif model == "nn":
+            mins = i * 5
+            Y = conv_net_targets(Y)
+            conv_net(X, Y, mins)
         elif not error:
             print('Specified model is not supported.')
             error = True
