@@ -324,7 +324,6 @@ def main():
     else:
         model = str(sys.argv[1])
 
-    model = "nn"
     for i in range(1, 5):
         g = pd.read_csv('dataset/challenger_games_timeline_3/challenger_games_timeline_' + str(i) + '.euw1.csv')
         f = list(g.columns)
@@ -354,6 +353,7 @@ def main():
         print('The current model types are currently supported:')
         print('    - Logistic Regression (python main.py logistic-regression)')
         print('    - K Nearest Neighbour (python main.py knn)')
+        print('    - Neural Net (python main.py nn)')
 
 
 if __name__ == "__main__":
